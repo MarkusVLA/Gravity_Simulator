@@ -38,12 +38,10 @@ public:
         return velocity_;
     }
 
-    // Setter for velocity
     void setVelocity(const Vector2<double>& newVelocity) {
         velocity_ = newVelocity;
     }
 
-    // Getters for position and mass
     Vector2<double> getPosition() const { return position_; }
     double getMass() const { return mass_; }
 
@@ -79,9 +77,9 @@ public:
         window.draw(shape);
     }
 
-    void drawAsPoints(sf::RenderWindow& window) {
+    void drawAsPoints(sf::RenderWindow& window, sf::RenderStates states) {
         sf::Vertex point(sf::Vector2f(static_cast<float>(position_.GetX()), static_cast<float>(position_.GetY())), color_);
-        window.draw(&point, 1, sf::PrimitiveType::Points);
+        window.draw(&point, 1, sf::PrimitiveType::Points, states);
     }
 
 };
