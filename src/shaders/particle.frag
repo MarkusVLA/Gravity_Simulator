@@ -1,6 +1,8 @@
 #version 120
 
+uniform vec4 u_color;
+
 void main() {
-    // Use the color from the vertex data
-    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    // Use the color from the uniform
+    gl_FragColor = u_color;
 }

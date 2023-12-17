@@ -38,9 +38,26 @@ public:
         return Vector2(this->x_ + vec.GetX(), this->y_ + vec.GetY()); 
     }
 
+    // // Vector subtraction
+    // Vector2 operator*(const double scalar) const { 
+    //     return Vector2(this->x_ *  static_cast<Type>(scalar), this->y_ * static_cast<Type>(scalar)); 
+    // }
+
     // Vector subtraction
-    Vector2 operator-(const Vector2 &vec) const { 
-        return Vector2(this->x_ - vec.GetX(), this->y_ - vec.GetY()); 
+    Vector2 operator-(const Vector2 &vec) const {
+        return Vector2(this->x_ - vec.x_, this->y_ - vec.y_);
+    }
+
+    // Squared magnitude of the vector
+    Type SquaredMagnitude() const {
+        return this->x_ * this->x_ + this->y_ * this->y_;
+    }
+
+    // Vector subtraction without creating a new vector
+    Vector2& operator-=(const Vector2 &vec) {
+        this->x_ -= vec.GetX();
+        this->y_ -= vec.GetY();
+        return *this;
     }
 
     Vector2 operator+=(const Vector2 &vec) {
