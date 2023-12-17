@@ -8,6 +8,27 @@
 #define G 6.67430e-11 // Gravitational constant
 #define RADIUS 8
 
+
+
+class ParticleShader {
+public:
+
+    ParticleShader() {
+        if (!shader.loadFromFile("../src/shaders/particle.frag", sf::Shader::Fragment)) {
+            std::cerr << "Error loading shader" << std::endl;
+        }
+        states.shader = &shader;
+    }
+
+    void setUniforms(sf::Vector2f mousePos, sf::Vector2u windowSize) {
+        shader.setUniform("mouse", mousePos);
+        shader.setUniform("windowSize", sf::Vector2f(windowSize));
+    }
+    sf::Shader shader;
+    sf::RenderStates states;
+};
+
+
 class Particle {
 private:
     Vector2<double> position_, velocity_;
@@ -16,7 +37,8 @@ private:
     double radius_; // Radius of the particle for drawing on screen 
 
 public:
-    Particle(): position_(0.0, 0.0), velocity_(0.0, 0.0), mass_(10e9), color_(sf::Color::White), radius_(mass_ / 10e9) { }
+
+    Particle(): position_(0.0, 0.0), velocity_(0.0, 0.0), mass_(10e9), color_(sf::Color::White), radius_(mass_ / 10e9) {}
     Particle(double mass): position_(0.0, 0.0), velocity_(0.0, 0.0), mass_(mass), color_(sf::Color::White), radius_(mass_ / 10e9) { }
     Particle(double mass, Vector2<double> position): position_(position), velocity_(0.0, 0.0), mass_(mass), color_(sf::Color::White), radius_(mass_ / 10e9) { }
     Particle(double mass, Vector2<double> position, sf::Color color): position_(position), velocity_(0.0, 0.0), mass_(mass), color_(color), radius_(mass_ / 10e9) { }
@@ -69,17 +91,41 @@ public:
             position_.y_ = 0;
         }
     }
+    
 
-    void draw(sf::RenderWindow& window) {
-        sf::CircleShape shape(static_cast<float>(radius_));
-        shape.setFillColor(color_);
-        shape.setPosition({static_cast<float>(position_.GetX()), static_cast<float>(position_.GetY())});
-        window.draw(shape);
+    friend std::ostream& operator<<(std::ostream& os, const Particle& particle) {
+        os << "Particle: " << particle.position_ << " " << particle.velocity_ << " " << particle.mass_;
+        return os;
     }
 
-    void drawAsPoints(sf::RenderWindow& window, sf::RenderStates states) {
-        sf::Vertex point(sf::Vector2f(static_cast<float>(position_.GetX()), static_cast<float>(position_.GetY())), color_);
-        window.draw(&point, 1, sf::PrimitiveType::Points, states);
+
+    friend void drawParticlesAsPointCloud(sf::RenderWindow& window, ParticleShader &particleShader, std::vector<Particle>& particles) {
+        // Create a buffer to store the positions and colors of the particles
+        sf::VertexArray vertices(sf::PrimitiveType::Points, particles.size());
+
+        // Update the buffer with the new positions and colors of the particles
+        for (size_t i = 0; i < particles.size(); ++i) {
+            vertices[i].position = sf::Vector2f(particles[i].position_.GetX(), particles[i].position_.GetY());
+            vertices[i].color = particles[i].color_;
+        }
+
+        // Draw the particles
+        window.draw(vertices, particleShader.states);
     }
 
+
+    // friend void drawParticlesAsPointCloud(sf::RenderWindow& window, ParticleShader &shader, std::vector<Particle>& particles) {
+    //     // Create a buffer to store the positions and colors of the particles
+    //     //std::vector<sf::Vertex> vertices(particles.size());
+    //     sf::VertexArray vertexArray(sf::PrimitiveType::Points, particles.size());
+
+    //     // Update the buffer with the new positions and colors of the particles
+    //     for (size_t i = 0; i < particles.size(); ++i) {
+    //         vertices[i].position = sf::Vector2f(particles[i].position_.GetX(), particles[i].position_.GetY());
+    //         vertices[i].color = particles[i].color_;
+    //     }
+
+    //     // Draw the particles
+    //     window.draw(vertices.data(), vertices.size(), sf::PrimitiveType::Points, shader.states);
+    // }
 };

@@ -5,7 +5,6 @@
 #include <SFML/Graphics.hpp>
 #include "utils/rand.h"
 #include "gridmap.h"
-#include <SFML/Graphics.hpp>
 #include "utils/gui.h"
 #include "utils/threadpool.h"
 #include <thread>
@@ -13,7 +12,7 @@
 
 
 #define GRID_SIZE 16
-#define NUM_THREADS std::thread::hardware_concurrency() - 3 // Number of threads to use for simulation
+#define NUM_THREADS std::thread::hardware_concurrency() - 2 // Number of threads to use for simulation
 sf::Vector2u windowSize = {1800, 1000};
 volatile double TIME_STEP = 1.0f; // Seconds / Sim frame
 
@@ -25,6 +24,7 @@ void processParticles(std::vector<Particle>& particles, int start, int end) {
         Vector2<double> force = {0, 0}; // Start with zero force
         for (int j = 0; j < particles.size(); j++){
             if (i != j){
+
                 force += part.calculateGravitationalForce(particles[j].getMass(), particles[j].getPosition());
             
             }
@@ -39,12 +39,12 @@ int main() {
     sf::ContextSettings settings;
     settings.antialiasingLevel = 9; // Choose the level of anti-aliasing
     sf::RenderWindow window(sf::VideoMode(windowSize, 32), "SFML Window", sf::Style::Default | sf::Style::Resize, settings);
-    window.setFramerateLimit(60); 
+    // window.setFramerateLimit(60); 
 
     Camera camera(windowSize.x, windowSize.y); // Create a Camera object
 
     std::vector<Particle> particles;
-    unsigned int numParticles = 3000; // Number of particles
+    unsigned int numParticles = 8000; // Number of particles
 
     Slider slider(100, 100, 200, 20); // Create a Slider object
     bool dragging = false; // Is the user dragging the slider?
@@ -70,12 +70,14 @@ int main() {
     int particlesPerThread = numParticles / NUM_THREADS;
 
 
-    // Shaders
-    sf::Shader shader;
-    if (!shader.loadFromFile("../src/shaders/particle.frag", sf::Shader::Fragment)) {
-        std::cerr << "Failed to load shader" << std::endl;
-        return EXIT_FAILURE;
-    }
+    // // Shaders
+    // sf::Shader shader;
+    // if (!shader.loadFromFile("../src/shaders/particle.vert", "../src/shaders/particle.frag")) {
+    //     std::cerr << "Failed to load shaders" << std::endl;
+    //     return EXIT_FAILURE;
+    // }
+
+    ParticleShader shader;
 
 
     while (window.isOpen()) {
@@ -122,17 +124,14 @@ int main() {
 
         window.clear();
         window.setView(window.getDefaultView());
-        text.setString("Time Step: " + std::to_string(TIME_STEP) + "s" + "\n" + "Number of Particles: " + std::to_string(numParticles) + "\n" );
+        text.setString("Time Step: " + std::to_string(TIME_STEP) + "s" + "\n" + "Number of Particles: " + std::to_string(numParticles) + "\n" + "Threads " + std::to_string(NUM_THREADS) );
         window.draw(text);
         slider.draw(window); // Draw the slider
 
         window.setView(camera.getView()); // Set the view to the camera view
 
-        sf::RenderStates states;
-        states.shader = &shader;
-        for (auto &part: particles) {
-            part.drawAsPoints(window, states); // Draw the particle
-        }
+        // Draw the particles
+        drawParticlesAsPointCloud(window, shader, particles);
         window.display();
     }
 

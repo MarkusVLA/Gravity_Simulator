@@ -1,11 +1,12 @@
 # Particle Gravity Simulator
 
 This is a simple particle gravity simulator implemented in C++ using SFML.
+![Simulation Image](images/sim1.jpeg)
 
 ## Prerequisites
 
 - C++ Compiler (GCC, Clang, MSVC)
-- SFML library installed
+- CMake
 
 ## Compile Instructions
 
@@ -14,10 +15,9 @@ This is a simple particle gravity simulator implemented in C++ using SFML.
 3. Initialize the SFML submodule
 ```git submodule update --init --recursive```
 
-   
+
 4. Create a build folder and navigate in it
-```mkdir build```
-```cd build```
+```mkdir build``` & ```cd build```
 
 5. Compile the project: 
  
