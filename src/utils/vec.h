@@ -66,6 +66,14 @@ public:
         return *this;
     }
 
+    Vector2 operator/= (Type scalar) {
+        if (scalar != 0) {
+            this->x_ /= scalar;
+            this->y_ /= scalar;
+        }
+        return *this;
+    }
+
     // Dot product
     Type Dot(const Vector2<Type> &vec) const { 
         return this->x_ * vec.GetX() + this->y_ * vec.GetY(); 

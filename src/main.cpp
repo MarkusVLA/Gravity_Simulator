@@ -10,22 +10,21 @@
 #include "camera.h"
 #include "utils/quadtree.h"
 
-#define GRID_SIZE 16
-#define NUM_THREADS std::thread::hardware_concurrency() - 2 // Number of threads to use for simulation
-sf::Vector2u windowSize = {1800, 1000};
+
+const int NUM_THREADS = std::thread::hardware_concurrency() - 2; // Number of threads to use for simulation
+sf::Vector2u windowSize = {1000, 1000};
 volatile double TIME_STEP = 0.0f; // Seconds / Sim frame
 
 int main() {
-
-    sf::ContextSettings settings;
-    settings.antialiasingLevel = 8;
-    sf::RenderWindow window(sf::VideoMode(windowSize, 32), "SFML Window", sf::Style::Default | sf::Style::Resize, settings);
+    sf::RenderWindow window(sf::VideoMode(windowSize, 32), "SFML Window", sf::Style::Default | sf::Style::Resize);
     window.setFramerateLimit(60); 
 
     Camera camera(windowSize.x, windowSize.y); // Create a Camera object
 
     std::vector<Particle> particles;
-    unsigned int numParticles = 1000; // Number of particles
+    unsigned int numParticles = 8e3; // Number of particles
+
+    QuadTree testQuadTree(Rectangle(0, 0, windowSize.x, windowSize.y), 64); // Create a QuadTree object
 
     Slider slider(100, 100, 200, 20); // Create a Slider object
     bool dragging = false; // Is the user dragging the slider?
@@ -40,7 +39,7 @@ int main() {
     // Create particles with random positions and velocities
     for (unsigned int i = 0; i < numParticles; i++) {
         double mass = Random::GetRandomDoubleNormal(10e9, 10e9, i); // Randimized mass for each particle
-        Vector2<double> position(Random::GetRandomDoubleUniform(windowSize.x * 1/3 , windowSize.x * 2/3, i * 4), Random::GetRandomDoubleUniform(windowSize.y * 1/3 , windowSize.y * 2/3, i * 11));
+        Vector2<double> position(Random::GetRandomDoubleNormal(100 , windowSize.x / 2, i * 4), Random::GetRandomDoubleNormal(100, windowSize.y / 2, i * 11));
         Vector2<double> vel(Random::GetRandomDoubleNormal(0.4, 0.0, i+2), Random::GetRandomDoubleNormal(0.4, 0.0, i+3));
         Particle particle(mass, position, sf::Color((int)Random::GetRandomDoubleUniform(0,255, i), (int)Random::GetRandomDoubleUniform(0,255, i + 1),(int)Random::GetRandomDoubleUniform(0,255, i + 2)));
         particle.setVelocity(Vector2<double>());
@@ -48,8 +47,8 @@ int main() {
     }
 
     // Create a thread pool with NUM_THREADS threads
-    ThreadPool pool(NUM_THREADS);
-    int particlesPerThread = numParticles / NUM_THREADS;
+    // ThreadPool pool(NUM_THREADS);
+    // int particlesPerThread = numParticles / NUM_THREADS;
 
     // Shader object for drawing particles
     ParticleShader shader;
@@ -77,16 +76,18 @@ int main() {
 
         camera.handleInput(); // Handle camera movement
 
-        for (int i = 0; i < NUM_THREADS; i++) {
-            int start = i * particlesPerThread;
-            int end = (i + 1) * particlesPerThread;
-            if (i == NUM_THREADS - 1) {
-                end = numParticles;
-            }
-            pool.enqueue([&, start, end] {
-                processParticles(particles, start, end, TIME_STEP);
-            });
-        }
+
+        // // N^2 algorithm
+        // for (auto i = 0; i < NUM_THREADS; i++) {
+        //     int start = i * particlesPerThread;
+        //     int end = (i + 1) * particlesPerThread;
+        //     if (i == NUM_THREADS - 1) {
+        //         end = numParticles;
+        //     }
+        //     pool.enqueue([&, start, end] {
+        //         processParticles(particles, start, end, TIME_STEP);
+        //     });
+        // }
 
        
         window.clear();
@@ -99,11 +100,29 @@ int main() {
 
         // draw UI
         window.setView(window.getDefaultView());
+        
+        // Barnes-Hut Algorithm
+        testQuadTree.clear();
+        
+        for (auto& particle : particles) {
+            testQuadTree.insert(particle);
+        }
+
+        // Redistribution of particles chages the mass and center of mass of each node
+        testQuadTree.updateTreeMass();
+
+        for (auto& particle : particles) {
+            Vector2<double> force = testQuadTree.calculateGravitationalForce(particle);
+            particle.applyForce(force, TIME_STEP);
+            particle.updatePosition(TIME_STEP);
+        }
+
+        // testQuadTree.draw(window);
         text.setString("Time Step: " + std::to_string(TIME_STEP) + "s" + "\n" + "Number of Particles: " + std::to_string(numParticles) + "\n" + "Threads " + std::to_string(NUM_THREADS) );
         window.draw(text);
         slider.draw(window); // Draw the slider
         window.display();
     }
-
+    
     return 0;
 }
