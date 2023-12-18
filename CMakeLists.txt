@@ -28,9 +28,8 @@ add_executable(app
 set_target_properties(app PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
 
-
 if(APPLE OR UNIX)
     target_compile_options(app PRIVATE -Wall -Wextra -Wno-unused-parameter)
 elseif(WIN32)
-    set_compile_options(app PRIVATE /W4)
+    target_compile_options(app PRIVATE /W4)
 endif()
