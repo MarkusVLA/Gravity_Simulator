@@ -6,6 +6,7 @@
 #include "../particle.h"
 #include <SFML/Graphics.hpp>
 #include "vec.h"
+#include <memory>
 
 class Rectangle {
 public:
@@ -39,10 +40,10 @@ private:
     bool divided_ = false; // Is the node divided?
 
     // Branches of the tree
-    QuadTree* northWest_ = nullptr;
-    QuadTree* northEast_ = nullptr;
-    QuadTree* southWest_ = nullptr;
-    QuadTree* southEast_ = nullptr;
+    std::unique_ptr<QuadTree> northWest_;
+    std::unique_ptr<QuadTree> northEast_;
+    std::unique_ptr<QuadTree> southWest_;
+    std::unique_ptr<QuadTree> southEast_;
 
 public:
 
@@ -74,5 +75,5 @@ public:
     // Calculate the gravitational force of QuadTree on a particle
     Vector2<double> calculateGravitationalForce(Particle& particle);
     // Calculate the gravitational force of a single mass
-    Vector2<double> calculateForceForSingleMass(Particle& Particle, Vector2<double> distanceVec);
+    Vector2<double> calculateForceForSingleMass(Particle& particle, Vector2<double> distanceVec, double distanceSquared);
 };
