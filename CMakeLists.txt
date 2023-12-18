@@ -16,15 +16,21 @@ endif()
 
 link_libraries(${SFML})
 
-
-
 add_executable(app
     src/main.cpp
     src/utils/vec.h
     src/utils/rand.h
     src/particle.h
-    src/gridmap.h
+    src/utils/quadtree.h
+    src/utils/quadtree.cpp
 )
 
 set_target_properties(app PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build")
+
+
+if(APPLE OR UNIX)
+    target_compile_options(app PRIVATE -Wall -Wextra -Wno-unused-parameter)
+elseif(WIN32)
+    set_compile_options(app PRIVATE /W4 /WX)
+endif()
