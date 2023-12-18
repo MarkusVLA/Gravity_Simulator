@@ -1,8 +1,9 @@
-#version 330 core
+#version 330
 
 uniform vec4 u_color;
 
 void main() {
     // Use the color from the uniform
-    gl_FragColor = u_color;
+    gl_FragColor = (u_color);
+
 }

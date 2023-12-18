@@ -4,12 +4,11 @@
 #include "particle.h"
 #include <SFML/Graphics.hpp>
 #include "utils/rand.h"
-#include "gridmap.h"
 #include "utils/gui.h"
 #include "utils/threadpool.h"
 #include <thread>
 #include "camera.h"
-
+#include "utils/quadtree.h"
 
 #define GRID_SIZE 16
 #define NUM_THREADS std::thread::hardware_concurrency() - 2 // Number of threads to use for simulation
@@ -26,7 +25,7 @@ int main() {
     Camera camera(windowSize.x, windowSize.y); // Create a Camera object
 
     std::vector<Particle> particles;
-    unsigned int numParticles = 2000; // Number of particles
+    unsigned int numParticles = 1000; // Number of particles
 
     Slider slider(100, 100, 200, 20); // Create a Slider object
     bool dragging = false; // Is the user dragging the slider?
@@ -60,33 +59,25 @@ int main() {
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 window.close();
-            }
-
-            else if (event.type == sf::Event::MouseWheelScrolled) {
+            } else if (event.type == sf::Event::MouseWheelScrolled) {
                 camera.handleZoom(event.mouseWheelScroll.delta); // Handle zooming
-            }
-
-            else if (event.type == sf::Event::Resized) {
+            } else if (event.type == sf::Event::Resized) {
                 // Update the view to the new size of the window
                 sf::FloatRect visibleArea({0.0, 0.0}, {(float) event.size.width, (float) event.size.height});
                 window.setView(sf::View(visibleArea));
-            }
-             else if (event.type == sf::Event::MouseButtonPressed) {
-                if (slider.contains(event.mouseButton.x, event.mouseButton.y)) {
-                    dragging = true;
-                }
+            } else if (event.type == sf::Event::MouseButtonPressed) {
+                if (slider.contains(event.mouseButton.x, event.mouseButton.y)) { dragging = true; }
             } else if (event.type == sf::Event::MouseButtonReleased) {
                 dragging = false;
             } else if (event.type == sf::Event::MouseMoved && dragging) {
                 slider.moveThumb(event.mouseMove.x);
                 TIME_STEP = slider.getValue() * 2; // Update TIME_STEP based on the slider value
-
             }
         }
 
         camera.handleInput(); // Handle camera movement
 
-        for (int i = 0; i < NUM_THREADS; ++i) {
+        for (int i = 0; i < NUM_THREADS; i++) {
             int start = i * particlesPerThread;
             int end = (i + 1) * particlesPerThread;
             if (i == NUM_THREADS - 1) {
@@ -97,17 +88,20 @@ int main() {
             });
         }
 
+       
         window.clear();
-        window.setView(window.getDefaultView());
-        text.setString("Time Step: " + std::to_string(TIME_STEP) + "s" + "\n" + "Number of Particles: " + std::to_string(numParticles) + "\n" + "Threads " + std::to_string(NUM_THREADS) );
-        window.draw(text);
-        slider.draw(window); // Draw the slider
 
         window.setView(camera.getView()); // Set the view to the camera view
 
         // Draw the particles
-        // drawParticlesAsPointCloud(window, shader, particles);
-        drawParticlesAsSpheres(window, shader, particles);
+        drawParticles(window, shader, particles, camera);
+
+
+        // draw UI
+        window.setView(window.getDefaultView());
+        text.setString("Time Step: " + std::to_string(TIME_STEP) + "s" + "\n" + "Number of Particles: " + std::to_string(numParticles) + "\n" + "Threads " + std::to_string(NUM_THREADS) );
+        window.draw(text);
+        slider.draw(window); // Draw the slider
         window.display();
     }
 

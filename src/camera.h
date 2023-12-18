@@ -1,3 +1,5 @@
+#pragma once
+
 #include <SFML/Graphics.hpp>
 
 
@@ -7,16 +9,16 @@ public:
 
     void handleInput() {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-            view.move({0, -4 * view.getSize().y / 1000}); // Move up
+            view.move({0, -5 * view.getSize().y / 1000}); // Move up
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-            view.move({0, 4 * view.getSize().y / 1000}); // Move down
+            view.move({0, 5 * view.getSize().y / 1000}); // Move down
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-            view.move({-4 * view.getSize().x / 1000, 0}); // Move left
+            view.move({-5 * view.getSize().x / 1000, 0}); // Move left
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-            view.move({4 * view.getSize().x / 1000, 0}); // Move right
+            view.move({5 * view.getSize().x / 1000, 0}); // Move right
         }
     }
 
@@ -28,12 +30,13 @@ public:
         }
     }
 
+
     sf::View& getView() {
         return view;
     }
 
 private:
     sf::View view;
-    float minZoomLevel = 100; // Minimum zoom level
+    float minZoomLevel = 1000; // Minimum zoom level
     float maxZoomLevel = 100000; // Maximum zoom level
 };

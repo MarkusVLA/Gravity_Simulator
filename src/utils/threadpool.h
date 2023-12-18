@@ -60,8 +60,7 @@ void ThreadPool::enqueue(F&& f) {
 }
 
 // the destructor joins all threads
-ThreadPool::~ThreadPool()
-{
+ThreadPool::~ThreadPool() {
     {
         std::unique_lock<std::mutex> lock(queue_mutex);
         stop = true;

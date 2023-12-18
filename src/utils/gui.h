@@ -40,3 +40,25 @@ public:
         return (thumb.getPosition().x - track.getPosition().x) / (track.getSize().x - thumb.getRadius());
     }
 };
+
+
+#include <SFML/Graphics.hpp>
+
+class Button {
+private:
+    sf::RectangleShape buttonShape;
+public:
+    Button(float x, float y, float width, float height): buttonShape({width, height}) {
+        buttonShape.setPosition({x, y});
+        buttonShape.setFillColor(sf::Color::White);
+    }
+
+    void draw(sf::RenderWindow& window) {
+        window.draw(buttonShape);
+    }
+
+    bool contains(float x, float y) const {
+        return buttonShape.getGlobalBounds().contains({x, y});
+    }
+
+};
