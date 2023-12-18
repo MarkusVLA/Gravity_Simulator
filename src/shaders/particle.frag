@@ -1,8 +1,5 @@
 #version 120
 
-uniform float u_speed; // Speed of the particle
-uniform vec4 u_color; // Color of the particle
-
 vec3 gradient(float t) {
     const vec3 c0 = vec3(0.267004, 0.004874, 0.329415);
     const vec3 c1 = vec3(0.283072, 0.130895, 0.449241);
@@ -15,7 +12,7 @@ vec3 gradient(float t) {
     const vec3 c8 = vec3(0.525776, 0.833491, 0.288127);
     const vec3 c9 = vec3(0.762373, 0.876424, 0.137064);
     const vec3 c10 = vec3(0.993248, 0.906157, 0.143936);
-
+// 
     if (t < 0.1) return mix(c0, c1, t / 0.1);
     else if (t < 0.2) return mix(c1, c2, (t - 0.1) / 0.1);
     else if (t < 0.3) return mix(c2, c3, (t - 0.2) / 0.1);
@@ -28,13 +25,10 @@ vec3 gradient(float t) {
     else return mix(c9, c10, (t - 0.9) / 0.1);
 }
 
+
 void main() {
-    // Map the speed to a value between 0 and 1
-    // This mapping depends on the expected range of particle speeds in your application
-    float normalizedSpeed = clamp(u_speed, 0.0, 1.0);
-
-    // Get the color from the gradient function based on the normalized speed
+    float speed = gl_TexCoord[0].x;
+    float normalizedSpeed = clamp(speed / 10.0, 0.0, 1.0);
     vec3 color = gradient(normalizedSpeed);
-
-    gl_FragColor = vec4(color, 1.0); // Use the gradient color with full alpha
+    gl_FragColor = vec4(color, 1.0); // Set the final color of the fragment
 }

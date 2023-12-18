@@ -22,9 +22,9 @@ int main() {
     Camera camera(windowSize.x, windowSize.y); // Create a Camera object
 
     std::vector<Particle> particles;
-    unsigned int numParticles = 8e3; // Number of particles
+    unsigned int numParticles = 4e3; // Number of particles
 
-    QuadTree testQuadTree(Rectangle(0, 0, windowSize.x, windowSize.y), 64); // Create a QuadTree object
+    QuadTree testQuadTree(Rectangle(0, 0, windowSize.x, windowSize.y), 16); // Create a QuadTree object
 
     Slider slider(100, 100, 200, 20); // Create a Slider object
     bool dragging = false; // Is the user dragging the slider?
@@ -47,8 +47,7 @@ int main() {
     }
 
     // Create a thread pool with NUM_THREADS threads
-    // ThreadPool pool(NUM_THREADS);
-    // int particlesPerThread = numParticles / NUM_THREADS;
+    ThreadPool pool(NUM_THREADS);
 
     // Shader object for drawing particles
     ParticleShader shader;
@@ -74,32 +73,9 @@ int main() {
             }
         }
 
-        camera.handleInput(); // Handle camera movement
-
-
-        // // N^2 algorithm
-        // for (auto i = 0; i < NUM_THREADS; i++) {
-        //     int start = i * particlesPerThread;
-        //     int end = (i + 1) * particlesPerThread;
-        //     if (i == NUM_THREADS - 1) {
-        //         end = numParticles;
-        //     }
-        //     pool.enqueue([&, start, end] {
-        //         processParticles(particles, start, end, TIME_STEP);
-        //     });
-        // }
-
-       
         window.clear();
-
+        camera.handleInput(); // Handle camera movement
         window.setView(camera.getView()); // Set the view to the camera view
-
-        // Draw the particles
-        drawParticles(window, shader, particles, camera);
-
-
-        // draw UI
-        window.setView(window.getDefaultView());
         
         // Barnes-Hut Algorithm
         testQuadTree.clear();
@@ -111,13 +87,21 @@ int main() {
         // Redistribution of particles chages the mass and center of mass of each node
         testQuadTree.updateTreeMass();
 
-        for (auto& particle : particles) {
+        for (Particle& particle : particles) {
             Vector2<double> force = testQuadTree.calculateGravitationalForce(particle);
             particle.applyForce(force, TIME_STEP);
+        }
+
+        for (Particle& particle : particles) {
             particle.updatePosition(TIME_STEP);
         }
 
-        // testQuadTree.draw(window);
+        // Draw the particles
+        drawParticles(window, shader, particles, camera);
+
+
+        // draw UI
+        window.setView(window.getDefaultView());
         text.setString("Time Step: " + std::to_string(TIME_STEP) + "s" + "\n" + "Number of Particles: " + std::to_string(numParticles) + "\n" + "Threads " + std::to_string(NUM_THREADS) );
         window.draw(text);
         slider.draw(window); // Draw the slider

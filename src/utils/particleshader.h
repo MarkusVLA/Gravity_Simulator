@@ -12,20 +12,26 @@ public:
     sf::RenderStates states;
 
     ParticleShader() {
-        // Load the particle shader
+
+        // if (!shader.loadFromFile("../src/shaders/particle.vert", "../src/shaders/particle.frag")) {
+        //     std::cerr << "Error loading shaders" << std::endl;
+        //     // Handle error, possibly exit
+        // }
+
         if (!shader.loadFromFile("../src/shaders/particle.frag", sf::Shader::Fragment)) {
-            std::cerr << "Error loading fragment shader" << std::endl;
+            std::cerr << "Error loading shaders" << std::endl;
+            // Handle error, possibly exit
         }
+
         states.shader = &shader;
     }
 
-    void setUniforms(sf::Vector2f mousePos, sf::Vector2u windowSize) {
-        shader.setUniform("mouse", mousePos);
-        shader.setUniform("windowSize", sf::Vector2f(windowSize));
+    void setViewMatrix(const sf::Transform& viewMatrix) {
+        shader.setUniform("u_viewMatrix", sf::Glsl::Mat4(viewMatrix.getMatrix()));
     }
 
-    void setSpeed(float speed) {
-        shader.setUniform("u_speed", speed);
+    void setProjectionMatrix(const sf::Transform& projectionMatrix) {
+        shader.setUniform("u_projectionMatrix", sf::Glsl::Mat4(projectionMatrix.getMatrix()));
     }
 
     void setColor(sf::Color& color) {

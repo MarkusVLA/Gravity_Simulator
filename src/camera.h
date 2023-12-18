@@ -35,6 +35,26 @@ public:
         return view;
     }
 
+    sf::Transform getProjectionMatrix() const {
+        sf::Vector2f size = view.getSize();
+        sf::Vector2f center = view.getCenter();
+
+        float left = center.x - size.x / 2.0f;
+        float right = center.x + size.x / 2.0f;
+        float bottom = center.y + size.y / 2.0f;
+        float top = center.y - size.y / 2.0f;
+
+        sf::Transform projection;
+        projection.translate({left, top});
+        projection.scale({2.0f / (right - left), -2.0f / (bottom - top)});
+        return projection;
+    }
+
+    sf::Transform getViewMatrix() const {
+        sf::Transform viewTransform = view.getTransform();
+        return viewTransform.getInverse();
+    }
+
 private:
     sf::View view;
     float minZoomLevel = 1000; // Minimum zoom level

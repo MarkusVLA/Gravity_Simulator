@@ -32,5 +32,5 @@ set_target_properties(app PROPERTIES
 if(APPLE OR UNIX)
     target_compile_options(app PRIVATE -Wall -Wextra -Wno-unused-parameter)
 elseif(WIN32)
-    set_compile_options(app PRIVATE /W4 /WX)
+    set_compile_options(app PRIVATE /W4)
 endif()
